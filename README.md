@@ -61,7 +61,7 @@ cargo run --release --example png2gmd -- klatka.png wynik.gmd 16
    - *No Touch*: obiekty nie kolidują z graczem (blok 211 jest normalnie bryłą!).
    - *Don't Fade + Don't Enter*: piksele ignorują efekty wejścia, więc obraz nie rozsypie się
      przy wjeździe kamery.
-5. **Wybierz folder…** (raz): wskaż folder gry, z którego gra importuje poziomy. Program zapamiętuje
+5. **Wybierz folder…** (raz): wskaż folder docelowy plików `.gmd` (patrz „Import do gry”). Program zapamiętuje
    go w `%APPDATA%\GDmation\config.json`.
 6. **Wyślij do gry** zapisuje poziom jako `<nazwa poziomu>.gmd` w tym folderze.
    **Bez duplikatów:** jedna nazwa poziomu = jeden plik. Ponowne wysłanie nadpisuje poprzednią wersję
@@ -72,13 +72,14 @@ cargo run --release --example png2gmd -- klatka.png wynik.gmd 16
 
 ## Import do gry
 
-Główna droga: **Wyślij do gry** zapisuje `.gmd` w wybranym folderze gry (w plikach Steama),
-skąd gra go importuje. Wynik pojawi się jako poziom o nazwie ustawionej w programie.
+**Czysta gra 2.209 nie importuje plików `.gmd`.** Sprawdzone na instalacji Steam autora poziomu
+(raport z 2026-10-30): w folderze gry ani w `%LOCALAPPDATA%\GeometryDash` nie ma folderu importu,
+a import `.gmd` zapewniały wcześniej mody Geode (`hjfod.gmd-api`, `hjfod.gdshare`).
 
-<!-- TODO: dokładna nazwa folderu i kroki importu w grze, po potwierdzeniu przez autora poziomu. -->
-
-Zapis bezpośrednio do `%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat` (etap 4) jest opcjonalny,
-z obowiązkową kopią zapasową i ostrzeżeniem, że gra musi być zamknięta.
+Obecny przycisk **Wyślij do gry** zapisuje tylko plik `.gmd` w wybranym folderze; gra bez modów
+go nie wczyta. Bez modów jedyną drogą jest zapis do
+`%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat` (planowane, z kopią zapasową i ostrzeżeniem,
+że gra musi być zamknięta).
 
 ## Kopiowanie animacji do innego poziomu
 
