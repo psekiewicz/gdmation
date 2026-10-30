@@ -1,0 +1,38 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Testy
+        run: cargo test --all-targets
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Przykładowy eksport (smoke test)
+        run: cargo run --release --example png2gmd -- assets/przyklad_krew.png przyklad_krew.gmd
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gdmation-windows
+          path: |
+            target/release/gdmation.exe
+            przyklad_krew.gmd
+          if-no-files-found: error

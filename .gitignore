@@ -1,0 +1,5 @@
+/target
+*.gmd
+!tests/**/*.gmd
+*.dat
+*.bak
