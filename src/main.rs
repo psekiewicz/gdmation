@@ -1,5 +1,7 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
+mod map_ui;
+
 use std::path::PathBuf;
 
 use eframe::egui::{
@@ -28,7 +30,7 @@ fn main() -> eframe::Result {
         Box::new(move |cc| {
             let mut app = App::default();
             if let Some(path) = initial {
-                app.load_path(&cc.egui_ctx, path);
+                app.open_any(&cc.egui_ctx, path);
             }
             Ok(Box::new(app))
         }),
@@ -49,7 +51,15 @@ struct Frame {
     image: RgbaImage,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+enum Mode {
+    Animation,
+    HitboxMap,
+}
+
 struct App {
+    mode: Mode,
+    map: map_ui::MapView,
     config: AppConfig,
     frame: Option<Frame>,
     reduce: ReduceOptions,
@@ -71,6 +81,8 @@ struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
+            mode: Mode::Animation,
+            map: map_ui::MapView::default(),
             config: AppConfig::load(),
             frame: None,
             reduce: ReduceOptions::default(),
@@ -99,6 +111,20 @@ impl App {
             .add_filter("PNG", &["png"])
             .pick_file()
         {
+            self.load_path(ctx, path);
+        }
+    }
+
+    /// `.gmd` otwiera mapę hitboxów, każdy inny plik traktujemy jak klatkę PNG.
+    fn open_any(&mut self, ctx: &egui::Context, path: PathBuf) {
+        let is_gmd = path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("gmd"));
+        if is_gmd {
+            self.mode = Mode::HitboxMap;
+            self.map.load(path);
+        } else {
+            self.mode = Mode::Animation;
             self.load_path(ctx, path);
         }
     }
@@ -521,13 +547,30 @@ impl eframe::App for App {
         let ctx = ui.ctx().clone();
         let dropped = ctx.input(|i| i.raw.dropped_files.first().map(|f| f.path().to_path_buf()));
         if let Some(path) = dropped {
-            self.load_path(&ctx, path);
+            self.open_any(&ctx, path);
         }
         self.refresh(&ctx);
-        egui::Panel::left("settings")
-            .resizable(true)
-            .default_size(320.0)
-            .show(ui, |ui| self.side_panel(ui));
-        egui::CentralPanel::default_margins().show(ui, |ui| self.preview(ui));
+        egui::Panel::top("mode").show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut self.mode, Mode::Animation, "Animacja");
+                ui.selectable_value(&mut self.mode, Mode::HitboxMap, "Mapa hitboxów");
+            });
+        });
+        match self.mode {
+            Mode::Animation => {
+                egui::Panel::left("settings")
+                    .resizable(true)
+                    .default_size(320.0)
+                    .show(ui, |ui| self.side_panel(ui));
+                egui::CentralPanel::default_margins().show(ui, |ui| self.preview(ui));
+            }
+            Mode::HitboxMap => {
+                egui::Panel::left("map_settings")
+                    .resizable(true)
+                    .default_size(380.0)
+                    .show(ui, |ui| self.map.side_panel(ui));
+                egui::CentralPanel::default_margins().show(ui, |ui| self.map.canvas(ui));
+            }
+        }
     }
 }

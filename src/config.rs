@@ -12,12 +12,22 @@ pub struct AppConfig {
     pub game_folder: Option<PathBuf>,
 }
 
-fn config_path() -> Option<PathBuf> {
+/// Folder ustawień GDmation (Windows: `%APPDATA%\GDmation`).
+pub fn config_dir() -> Option<PathBuf> {
     let base = std::env::var_os("APPDATA")
         .or_else(|| std::env::var_os("XDG_CONFIG_HOME"))
         .map(PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))?;
-    Some(base.join("GDmation").join("config.json"))
+    Some(base.join("GDmation"))
+}
+
+fn config_path() -> Option<PathBuf> {
+    Some(config_dir()?.join("config.json"))
+}
+
+/// Plik z kategoriami obiektów zatwierdzonymi na mapie hitboxów.
+pub fn categories_path() -> Option<PathBuf> {
+    Some(config_dir()?.join("kategorie.json"))
 }
 
 impl AppConfig {

@@ -11,6 +11,7 @@ obrazem. Obiekty z niego kopiujesz w edytorze do swojego właściwego poziomu.
 | Etap | Zakres | Stan |
 |---|---|---|
 | 1 (MVP) | 1 klatka PNG, podgląd z siatką i zoomem, redukcja palety, scalanie bloków, eksport `.gmd` | **gotowe, czeka na test w grze** |
+| — | mapa hitboxów z importowanego `.gmd`, kategorie zatwierdzane przez autora | **gotowe, czeka na test** |
 | 2 | wiele klatek, grupa na klatkę, automatyczny Z-order/Z-layer | planowane |
 | 3 | triggery Toggle/Alpha + Spawn, tempo klatek, pętla / jednorazowo | planowane |
 | 4 | zapis do `CCLocalLevels.dat` (z kopią zapasową), projekty JSON (prefaby) | planowane |
@@ -92,6 +93,37 @@ wybierasz plik w oknie importu w grze. Zapis bezpośrednio do
    Dlatego warto dobrać *Pierwszy kanał koloru* tak, żeby nie nachodził na kanały już używane.
 5. Grupy (500…) są zapisane w obiektach, więc kopiują się razem z nimi.
 
+## Mapa hitboxów
+
+Zakładka **Mapa hitboxów**: wczytaj poziom `.gmd` (przycisk albo przeciągnij plik na okno).
+Mapa pokazuje obiekty w kolorach kategorii:
+
+| Kolor | Kategoria | Kształt na mapie |
+|---|---|---|
+| niebieski | Blok | kratka 30×30 |
+| turkusowy | Pół blok | górna połowa kratki |
+| czerwony | Zagrożenie (kolec, piła…) | kratka 30×30 |
+| zielony | Slope 1 blok | trójkąt 30×30 |
+| pomarańczowy | Slope 2 bloki | trójkąt 60×30 |
+| (niewidoczne) | Bez hitboxu | dekoracje, triggery |
+
+Każdy kształt uwzględnia pozycję, skalę (`32`, `128`, `129`), odbicie (`4`, `5`) i obrót (`6`)
+obiektu. Obiekty z No Touch lub Passable są domyślnie ukryte (można je pokazać jako szare obrysy).
+
+**Skąd kategorie.** Gra nie ma w plikach tabeli „ID obiektu → hitbox” (sprawdzone na instalacji
+Steam). Zasada: zakładka edytora *Hazards* = zagrożenie, *Blocks* = blok (pół bloki osobno),
+*Slopes* = slope 1- lub 2-blokowy. Program **proponuje** kategorię z nazwy obiektu (tabela nazw
+gdlib: „Hazard/Spike/Saw/Blade” → zagrożenie, „Wide Slope” → slope 2 bloki, „Slope” → 1 blok,
+„Slab” → pół blok, „Square/Block/Brick” → blok, dekoracje, „Fake”, „3DL” itd. → bez hitboxu).
+Na liście **Użyte obiekty** widzisz tylko obiekty z Twojego poziomu. Popraw kategorię, w razie
+potrzeby zaznacz „odbij” przy slope'ach i kliknij **OK**. Wybory zapisują się w
+`%APPDATA%\GDmation\kategorie.json` i działają dla kolejnych poziomów.
+
+**Ograniczenie:** mapa rysuje obrys obiektu w kratce, nie dokładny hitbox gry (np. hitbox kolca
+jest mniejszy niż jego grafika). Dokładne hitboxy wymagałyby zrzutu danych z gry modem Geode;
+Geode wydany 16.10.2026 obsługuje GD 2.2081, a na 2.209 działa tylko w trybie zgodności bez UI
+i odrzuca mody (kod `geode-sdk/geode`, `loader/src/load.cpp`, `ModMetadataImpl.cpp`).
+
 ## Skąd pochodzą wartości
 
 Nic nie jest wpisane z pamięci. Źródła: kod gdlib 0.4.3 (crates.io, repozytorium
@@ -115,6 +147,11 @@ testowych dołączonych do gdlib.
 | `121` | No Touch | gdlib `ids::properties::NO_TOUCH` |
 | kanały 1–999 | zwykłe kanały koloru; ≥1000 to specjalne (1000 BG, 1001 G1, 1004 Obj…) | gdlib `structs::ColourChannel` (dokumentacja + `From<i16>`) |
 | grupy 1–9999 | zakres grup | gdlib `GDLevelData::get_unused_groups` |
+| `4`, `5` | odbicie X / Y | gdlib `PROPERTY_TABLE` („is flipped horizontally/vertically?”) |
+| `6` | obrót w stopniach | gdlib `PROPERTY_TABLE` („rotation”) |
+| `32` | skala jednolita | gdlib `PROPERTY_TABLE` („Scale”) |
+| `134` | Passable | gdlib `PROPERTY_TABLE` („Passable”) |
+| nazwy obiektów | podstawa propozycji kategorii na mapie | gdlib `properties::OBJECT_NAMES` (źródło: gd-info-explorer Flowvixa) |
 | `kS38` | lista kanałów kolorów w nagłówku poziomu; wpis: `1/2/3` RGB, `6` kanał, `7` krycie, `4` kolor gracza (−1 = brak) itd. | gdlib `leveldata::ColourString` (odnośnik do boomlings.dev „color-string”), format wpisów skopiowany z `DEFAULT_LEVEL_HEADERS` |
 | `k50` = 49 | binaryVersion dla 2.209 | gdlib `GDVersion::GD2209.to_binary_version_id()` |
 | `k17` = 22 | gameVersion dla 2.2xx | gdlib `GDVersion::to_game_version_id()` |
@@ -158,3 +195,10 @@ Na przykładowym `assets/przyklad_krew.png` (lub własnej klatce):
 10. Czy po skopiowaniu do innego poziomu obiekty zachowują grupę, a po ustawieniu kanałów kolory
    wyglądają tak samo.
 11. Czy duże skale (np. prostokąt 32×1 piksela przy 30 j./px) wyświetlają się poprawnie.
+
+### Mapa hitboxów
+12. Wczytaj swój poziom (eksport z gry) i porównaj mapę z edytorem: czy kolce, bloki, pół bloki i slope'y są w tych samych miejscach.
+13. Kierunek slope'a bez odbicia: program zakłada pełną część w prawym dolnym rogu (wznosi się w prawo). Jeśli w grze jest odwrotnie, napisz mi; zmienię to dla wszystkich naraz.
+14. Obrót: program zakłada, że dodatni kąt (właściwość 6) obraca zgodnie z ruchem wskazówek zegara. Sprawdź na obróconym slopie albo kolcu.
+15. Pół blok: czy w grze zajmuje górną połowę kratki.
+16. Obiekty z No Touch / Passable: czy w grze rzeczywiście nie kolidują (na mapie są ukryte).

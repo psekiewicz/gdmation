@@ -5,6 +5,7 @@
 pub mod config;
 pub mod game_folder;
 pub mod gd;
+pub mod hitmap;
 pub mod mesh;
 pub mod palette;
 pub mod pipeline;
