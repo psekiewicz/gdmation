@@ -61,14 +61,21 @@ cargo run --release --example png2gmd -- klatka.png wynik.gmd 16
    - *No Touch*: obiekty nie kolidują z graczem (blok 211 jest normalnie bryłą!).
    - *Don't Fade + Don't Enter*: piksele ignorują efekty wejścia, więc obraz nie rozsypie się
      przy wjeździe kamery.
-5. **Eksportuj .gmd…** zapisuje osobny poziom.
+5. **Wybierz folder…** (raz): wskaż folder gry, z którego gra importuje poziomy. Program zapamiętuje
+   go w `%APPDATA%\GDmation\config.json`.
+6. **Wyślij do gry** zapisuje poziom jako `<nazwa poziomu>.gmd` w tym folderze.
+   **Bez duplikatów:** jedna nazwa poziomu = jeden plik. Ponowne wysłanie nadpisuje poprzednią wersję
+   (także gdy nazwa różni się tylko wielkością liter), a program pokazuje to przed kliknięciem.
+   Zapis idzie najpierw do pliku tymczasowego, więc przerwany zapis nie zostawia uszkodzonego `.gmd`.
+   Różne animacje muszą mieć różne nazwy poziomu, bo inaczej nadpiszą się nawzajem.
+7. **Zapisz kopię jako .gmd…** zapisuje plik w dowolnym miejscu (archiwum, prefaby).
 
 ## Import do gry
 
-Główna droga: wyeksportuj `.gmd` i zaimportuj go w grze (2.209 ma import poziomów z pliku).
-Wynik pojawi się jako nowy poziom lokalny o nazwie ustawionej w programie.
+Główna droga: **Wyślij do gry** zapisuje `.gmd` w wybranym folderze gry (w plikach Steama),
+skąd gra go importuje. Wynik pojawi się jako poziom o nazwie ustawionej w programie.
 
-<!-- TODO: dokładna ścieżka w menu gry, po potwierdzeniu przez autora poziomu. -->
+<!-- TODO: dokładna nazwa folderu i kroki importu w grze, po potwierdzeniu przez autora poziomu. -->
 
 Zapis bezpośrednio do `%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat` (etap 4) jest opcjonalny,
 z obowiązkową kopią zapasową i ostrzeżeniem, że gra musi być zamknięta.
@@ -132,19 +139,21 @@ właściwości: `51` cel (grupa), `56` aktywuj grupę, `35` krycie, `10` czas, `
 
 Na przykładowym `assets/przyklad_krew.png` (lub własnej klatce):
 
-1. Czy gra przyjmuje plik `.gmd` z GDmation przy imporcie, a poziom otwiera się w edytorze
+1. Czy po **Wyślij do gry** plik pojawia się w grze, a po ponownym wysłaniu (zmień np. liczbę kolorów)
+   w grze jest nadal **jeden** poziom, zaktualizowany, a nie dwa.
+2. Czy gra przyjmuje plik `.gmd` z GDmation przy imporcie, a poziom otwiera się w edytorze
    bez błędu i ma nazwę ustawioną w programie. Jeśli import odrzuci plik, prześlij mi komunikat
    (gdlib zapisuje `.gmd` w kompaktowym formacie plist `gjver="2.0"`).
-2. Czy obiekt 211 to pełny kwadrat bez obramowania i bez cieniowania.
-3. Czy obraz nie jest odwrócony (góra PNG = góra w grze) i czy proporcje się zgadzają.
-4. Czy przy rozmiarze piksela 7.5 obraz 32×24 zajmuje 8×6 kratek, a lewy dolny róg leży w (150, 90),
+3. Czy obiekt 211 to pełny kwadrat bez obramowania i bez cieniowania.
+4. Czy obraz nie jest odwrócony (góra PNG = góra w grze) i czy proporcje się zgadzają.
+5. Czy przy rozmiarze piksela 7.5 obraz 32×24 zajmuje 8×6 kratek, a lewy dolny róg leży w (150, 90),
    czyli na rogu kratki.
-5. Czy między sąsiednimi prostokątami nie ma szpar ani nakładek (zoom w edytorze i w grze).
+6. Czy między sąsiednimi prostokątami nie ma szpar ani nakładek (zoom w edytorze i w grze).
    Jeśli są szpary, przetestuj *Zakładka* = 0.05.
-6. Czy kolory się zgadzają: w *Edit Level → Color* kanały 500…503 mają kolory z palety.
-7. Czy obiekty mają grupę 500, Z-layer T1, No Touch, Don't Fade, Don't Enter (okno *Edit Object*,
+7. Czy kolory się zgadzają: w *Edit Level → Color* kanały 500…503 mają kolory z palety.
+8. Czy obiekty mają grupę 500, Z-layer T1, No Touch, Don't Fade, Don't Enter (okno *Edit Object*,
    *Edit Group*).
-8. Czy gracz przechodzi przez obraz (No Touch) i nie ginie.
-9. Czy po skopiowaniu do innego poziomu obiekty zachowują grupę, a po ustawieniu kanałów kolory
+9. Czy gracz przechodzi przez obraz (No Touch) i nie ginie.
+10. Czy po skopiowaniu do innego poziomu obiekty zachowują grupę, a po ustawieniu kanałów kolory
    wyglądają tak samo.
-10. Czy duże skale (np. prostokąt 32×1 piksela przy 30 j./px) wyświetlają się poprawnie.
+11. Czy duże skale (np. prostokąt 32×1 piksela przy 30 j./px) wyświetlają się poprawnie.

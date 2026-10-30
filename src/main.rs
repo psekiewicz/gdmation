@@ -6,6 +6,8 @@ use eframe::egui::{
     self, Color32, ColorImage, Pos2, Rect, Stroke, StrokeKind, TextureHandle, TextureOptions, Vec2,
 };
 use gdmation::{
+    config::AppConfig,
+    game_folder,
     gd::{self, ExportSettings, ZLayerChoice},
     pipeline::{self, Processed, ReduceOptions},
 };
@@ -48,6 +50,7 @@ struct Frame {
 }
 
 struct App {
+    config: AppConfig,
     frame: Option<Frame>,
     reduce: ReduceOptions,
     settings: ExportSettings,
@@ -68,6 +71,7 @@ struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
+            config: AppConfig::load(),
             frame: None,
             reduce: ReduceOptions::default(),
             settings: ExportSettings::default(),
@@ -150,6 +154,44 @@ impl App {
         self.processed_for = Some(self.reduce);
     }
 
+    fn pick_game_folder(&mut self) {
+        let mut dialog =
+            rfd::FileDialog::new().set_title("Folder gry, do którego trafią pliki .gmd");
+        if let Some(dir) = &self.config.game_folder {
+            dialog = dialog.set_directory(dir);
+        }
+        let Some(dir) = dialog.pick_folder() else {
+            return;
+        };
+        self.config.game_folder = Some(dir);
+        self.status = match self.config.save() {
+            Ok(()) => "Zapamiętano folder gry.".into(),
+            Err(e) => format!("Folder wybrany, ale nie udało się go zapamiętać: {e:#}"),
+        };
+    }
+
+    fn send_to_game(&mut self) {
+        let (Some(processed), Some(folder)) = (&self.processed, &self.config.game_folder) else {
+            return;
+        };
+        let result = processed
+            .build_level(&self.settings)
+            .and_then(|level| game_folder::send_to_folder(&level, folder));
+        self.status = match result {
+            Ok(out) => format!(
+                "{} {} ({} obiektów).",
+                if out.replaced {
+                    "Zaktualizowano"
+                } else {
+                    "Dodano"
+                },
+                out.path.display(),
+                processed.objects_after()
+            ),
+            Err(e) => format!("Błąd: {e:#}"),
+        };
+    }
+
     fn export_gmd(&mut self) {
         let Some(processed) = &self.processed else {
             return;
@@ -163,7 +205,7 @@ impl App {
         };
         let Some(path) = rfd::FileDialog::new()
             .add_filter("Poziom GD", &["gmd"])
-            .set_file_name(format!("{}.gmd", self.settings.level_name))
+            .set_file_name(game_folder::level_file_name(&self.settings.level_name))
             .save_file()
         else {
             return;
@@ -321,8 +363,40 @@ impl App {
                     ui.colored_label(Color32::LIGHT_RED, e.to_string());
                 }
                 ui.add_space(6.0);
+                ui.label("Folder gry:");
+                match &self.config.game_folder {
+                    Some(dir) => ui.monospace(dir.display().to_string()),
+                    None => ui.colored_label(Color32::YELLOW, "nie wybrano"),
+                };
+                let folder_ok = self.config.game_folder.as_ref().is_some_and(|d| d.is_dir());
+                if let Some(dir) = self.config.game_folder.as_ref().filter(|_| folder_ok) {
+                    let target = game_folder::target_path(dir, &self.settings.level_name);
+                    let name = target.file_name().unwrap_or_default().to_string_lossy();
+                    if target.exists() {
+                        ui.label(format!("Plik: {name} (zostanie nadpisany, bez duplikatu)"));
+                    } else {
+                        ui.label(format!("Plik: {name} (nowy)"));
+                    }
+                } else if self.config.game_folder.is_some() {
+                    ui.colored_label(Color32::LIGHT_RED, "Folder nie istnieje.");
+                }
+                ui.horizontal(|ui| {
+                    if ui.button("Wybierz folder…").clicked() {
+                        self.pick_game_folder();
+                    }
+                    if ui
+                        .add_enabled(
+                            check.is_ok() && folder_ok,
+                            egui::Button::new("Wyślij do gry"),
+                        )
+                        .clicked()
+                    {
+                        self.send_to_game();
+                    }
+                });
+                ui.add_space(4.0);
                 if ui
-                    .add_enabled(check.is_ok(), egui::Button::new("Eksportuj .gmd…"))
+                    .add_enabled(check.is_ok(), egui::Button::new("Zapisz kopię jako .gmd…"))
                     .clicked()
                 {
                     self.export_gmd();

@@ -2,6 +2,8 @@
 //!
 //! Cała logika jest tutaj, GUI (`main.rs`) tylko ją wywołuje, dzięki czemu da się ją testować.
 
+pub mod config;
+pub mod game_folder;
 pub mod gd;
 pub mod mesh;
 pub mod palette;
