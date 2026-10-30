@@ -72,14 +72,14 @@ cargo run --release --example png2gmd -- klatka.png wynik.gmd 16
 
 ## Import do gry
 
-**Czysta gra 2.209 nie importuje plików `.gmd`.** Sprawdzone na instalacji Steam autora poziomu
-(raport z 2026-10-30): w folderze gry ani w `%LOCALAPPDATA%\GeometryDash` nie ma folderu importu,
-a import `.gmd` zapewniały wcześniej mody Geode (`hjfod.gmd-api`, `hjfod.gdshare`).
+Aktualizacja 2.209 (15.10.2026) dodała w czystej grze **„Import/Export Editor Levels”**
+(lista zmian RobTopa). Nie ma osobnego folderu importu (sprawdzone na instalacji Steam).
+**Do potwierdzenia:** czy import przyjmuje pliki `.gmd` zapisane przez GDmation (gdlib, plist
+`gjver="2.0"`), czy inny format. Najprościej porównać z plikiem wyeksportowanym z samej gry.
 
-Obecny przycisk **Wyślij do gry** zapisuje tylko plik `.gmd` w wybranym folderze; gra bez modów
-go nie wczyta. Bez modów jedyną drogą jest zapis do
-`%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat` (planowane, z kopią zapasową i ostrzeżeniem,
-że gra musi być zamknięta).
+Przycisk **Wyślij do gry** zapisuje `.gmd` w wybranym folderze, bez duplikatów; z tego folderu
+wybierasz plik w oknie importu w grze. Zapis bezpośrednio do
+`%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat` pozostaje opcją awaryjną.
 
 ## Kopiowanie animacji do innego poziomu
 
