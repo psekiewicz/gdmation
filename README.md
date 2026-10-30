@@ -65,11 +65,13 @@ cargo run --release --example png2gmd -- klatka.png wynik.gmd 16
 
 ## Import do gry
 
-**Ważne:** czysta (bez modów) wersja 2.209 nie ma przycisku importu plików `.gmd`.
-Plik `.gmd` jest przenośnym zapisem poziomu (archiwum, wymiana, wczytanie innym narzędziem),
-ale żeby otworzyć wynik w grze bez modów, potrzebny jest zapis bezpośrednio do
-`%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat`. To jest zaplanowane (etap 4) z obowiązkową kopią
-zapasową i ostrzeżeniem, że gra musi być zamknięta.
+Główna droga: wyeksportuj `.gmd` i zaimportuj go w grze (2.209 ma import poziomów z pliku).
+Wynik pojawi się jako nowy poziom lokalny o nazwie ustawionej w programie.
+
+<!-- TODO: dokładna ścieżka w menu gry, po potwierdzeniu przez autora poziomu. -->
+
+Zapis bezpośrednio do `%LOCALAPPDATA%\GeometryDash\CCLocalLevels.dat` (etap 4) jest opcjonalny,
+z obowiązkową kopią zapasową i ostrzeżeniem, że gra musi być zamknięta.
 
 ## Kopiowanie animacji do innego poziomu
 
@@ -130,7 +132,9 @@ właściwości: `51` cel (grupa), `56` aktywuj grupę, `35` krycie, `10` czas, `
 
 Na przykładowym `assets/przyklad_krew.png` (lub własnej klatce):
 
-1. Czy poziom otwiera się w edytorze 2.209 bez błędu i ma nazwę ustawioną w programie.
+1. Czy gra przyjmuje plik `.gmd` z GDmation przy imporcie, a poziom otwiera się w edytorze
+   bez błędu i ma nazwę ustawioną w programie. Jeśli import odrzuci plik, prześlij mi komunikat
+   (gdlib zapisuje `.gmd` w kompaktowym formacie plist `gjver="2.0"`).
 2. Czy obiekt 211 to pełny kwadrat bez obramowania i bez cieniowania.
 3. Czy obraz nie jest odwrócony (góra PNG = góra w grze) i czy proporcje się zgadzają.
 4. Czy przy rozmiarze piksela 7.5 obraz 32×24 zajmuje 8×6 kratek, a lewy dolny róg leży w (150, 90),
