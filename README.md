@@ -41,6 +41,11 @@ Testy: `cargo test`. Wersja bez GUI (np. do skryptów):
 cargo run --release --example png2gmd -- klatka.png wynik.gmd 16
 ```
 
+Podgląd dowolnego `.gmd` (format, wersja, liczba obiektów, użyte ID z kategoriami mapy):
+```
+cargo run --release --example gmdinfo -- poziom.gmd
+```
+
 ## Jak używać
 
 1. **Wczytaj PNG…** (albo przeciągnij plik na okno lub na `gdmation.exe`).
